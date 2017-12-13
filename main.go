@@ -7,6 +7,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"math/rand"
 )
 
 func createEmptyBoard() [][]int {
@@ -123,15 +124,43 @@ func whoWon(board [][]int) int {
 	return 0
 }
 
+func computerInput(board [][]int) (int, int) {
+	empty := make([][]int, 0)
+
+	for x := range board {
+		for y := range board[x] {
+			if board[x][y] == 0 {
+
+				i := make([]int, 2)
+				i[0] = x
+				i[1] = y
+
+				empty = append(empty, i)
+			}
+		}
+	}
+
+	field := rand.Intn(len(empty))
+	return empty[field][0], empty[field][1]
+}
+
 func startEventLoop(board [][]int) {
 	player := 0
 	for {
-		field := actionRequired(player % 2)
-		x, y, err := calculateField(field)
 
-		if err != nil {
-			fmt.Println("Whoops, your input was not a natural number between 1 and 9. Try again!")
-			continue
+		x := 0
+		y := 0
+
+		if player % 2 == 1 {
+			x, y = computerInput(board)
+		} else {
+			field := actionRequired(0)
+			err := errors.New("")
+			x, y, err = calculateField(field)
+			if err != nil {
+				fmt.Println("Whoops, your input was not a natural number between 1 and 9. Try again!")
+				continue
+			}
 		}
 
 		if board[x][y] != 0 {
@@ -145,11 +174,11 @@ func startEventLoop(board [][]int) {
 
 		winner := whoWon(board)
 		if winner > 0 {
-			name := "one"
+			name := "Player one"
 			if winner == 2 {
-				name = "two"
+				name = "Computer"
 			}
-			fmt.Println("Player " + name + " won.")
+			fmt.Println(name + " won.")
 			break
 		}
 

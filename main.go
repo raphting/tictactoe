@@ -9,49 +9,48 @@ import (
 	"strings"
 )
 
-func getBoard(stones [][]int) string {
-	board := []string{"-------\n", "|1|2|3|\n", "-------\n", "|4|5|6|\n", "-------\n", "|7|8|9|\n", "-------"}
+func createEmptyBoard() [][]int {
+	// Create empty abstract 3x3 board
+	// 0 = not set; 1 = player one; 2 = player two
+	fields := make([][]int, 3)
+	for i := range fields {
+		fields[i] = make([]int, 3)
+		for empty := range fields[i] {
+			fields[i][empty] = 0
+		}
+	}
+	return fields
+}
 
-	for x := range stones {
-		for y := range stones[x] {
-			if stones[x][y] == 0 {
+func getBoard(board [][]int) string {
+	boardDesign := []string{"-------", "|1|2|3|", "-------", "|4|5|6|", "-------", "|7|8|9|", "-------"}
+
+	// Render every choice from the abstract board into the board design
+	for x := range board {
+		for y := range board[x] {
+			// No choice yet for this field
+			if board[x][y] == 0 {
 				continue
 			}
 
 			// Choose which stone to play (player one = X; player two = O)
 			place := "X"
-			if stones[x][y] == 2 {
+			if board[x][y] == 2 {
 				place = "O"
 			}
 
 			// Calculate field number and place stone
 			field := strconv.Itoa(1 + (y + (3 * x)))
-			for key, line := range board {
-				board[key] = strings.Replace(line, field, place, 1)
+			for key, line := range boardDesign {
+				boardDesign[key] = strings.Replace(line, field, place, 1)
 			}
 		}
 	}
 
-	finalize := ""
-	for _, line := range board {
-		finalize = finalize + line
-	}
-	return finalize
+	return strings.Join(boardDesign, "\n")
 }
 
-func createEmptyBoard() [][]int {
-	// Create empty abstract board
-	// 0 = not set; 1 = player one; 2 = player two
-	stones := make([][]int, 3)
-	for i := range stones {
-		stones[i] = make([]int, 3)
-		for empty := range stones[i] {
-			stones[i][empty] = 0
-		}
-	}
-	return stones
-}
-
+// Parse input and return x, y coordinates for abstract board
 func calculateField(input string) (int, int, error) {
 	num, err := strconv.Atoi(strings.TrimSpace(input))
 	if err != nil {
@@ -71,6 +70,19 @@ func calculateField(input string) (int, int, error) {
 	}
 
 	return 2, num - 7, nil
+}
+
+// Ask user for input
+func actionRequired(player int) string {
+	name := "one"
+	if player == 1 {
+		name = "two"
+	}
+
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Print("Player " + name + ", enter field number: ")
+	text, _ := reader.ReadString('\n')
+	return text
 }
 
 func whoWon(board [][]int) int {
@@ -111,18 +123,6 @@ func whoWon(board [][]int) int {
 	return 0
 }
 
-func actionRequired(player int) string {
-	name := "one"
-	if player == 1 {
-		name = "two"
-	}
-
-	reader := bufio.NewReader(os.Stdin)
-	fmt.Print("Player " + name + ", enter field number: ")
-	text, _ := reader.ReadString('\n')
-	return text
-}
-
 func startEventLoop(board [][]int) {
 	player := 0
 	for {
@@ -153,6 +153,7 @@ func startEventLoop(board [][]int) {
 			break
 		}
 
+		// After 9 rounds, the game is over, even without a winner
 		player++
 		if player > 8 {
 			break

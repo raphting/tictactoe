@@ -4,10 +4,10 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"math/rand"
 	"os"
 	"strconv"
 	"strings"
-	"math/rand"
 )
 
 func createEmptyBoard() [][]int {
@@ -130,11 +130,7 @@ func computerInput(board [][]int) (int, int) {
 	for x := range board {
 		for y := range board[x] {
 			if board[x][y] == 0 {
-
-				i := make([]int, 2)
-				i[0] = x
-				i[1] = y
-
+				i := []int{x, y}
 				empty = append(empty, i)
 			}
 		}
@@ -147,15 +143,13 @@ func computerInput(board [][]int) (int, int) {
 func startEventLoop(board [][]int) {
 	player := 0
 	for {
+		x, y := 0, 0
 
-		x := 0
-		y := 0
-
-		if player % 2 == 1 {
+		if player%2 == 1 {
 			x, y = computerInput(board)
 		} else {
 			field := actionRequired(0)
-			err := errors.New("")
+			var err error
 			x, y, err = calculateField(field)
 			if err != nil {
 				fmt.Println("Whoops, your input was not a natural number between 1 and 9. Try again!")
